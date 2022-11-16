@@ -28,7 +28,7 @@ public class HTTPS_Server
         sc.init(kmf.getKeyManagers(), null, null);
         SSLServerSocketFactory ssf = sc.getServerSocketFactory();
         SSLServerSocket s
-                = (SSLServerSocket) ssf.createServerSocket(8043);
+                = (SSLServerSocket) ssf.createServerSocket(conf.getPort());
         System.out.println("Server started:");
         printServerSocketInfo(s);
         // Listening to the port
@@ -66,7 +66,7 @@ public class HTTPS_Server
                         w.newLine();
                     }
                     w.write("</pre>");
-                    w.write("<form action=\"https://localhost:8043\" enctype=\"multipart/form-data\"" +
+                    w.write("<form action=\"https://localhost:"+conf.getPort()+"\" enctype=\"multipart/form-data\"" +
                             "method=\"post\">" +
                             "Enter your name <input name=\"login\" type=\"txt\"><br>" +
                             "<input value=\"Go\" type=\"submit\"></form>" +
