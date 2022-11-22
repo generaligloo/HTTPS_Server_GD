@@ -56,7 +56,7 @@ public class ServerListenerThread extends Thread {
                 count++;
                 LOGGER.info(ANSI_BLUE+ "Connection #: " + count + ANSI_RESET);
                 printSocketInfo(socket);
-                HttpsConnectionWorkerThread worker = new HttpsConnectionWorkerThread(socket, count);
+                HttpsConnectionWorkerThread worker = new HttpsConnectionWorkerThread(socket);
                 worker.start();
             }
         } finally {

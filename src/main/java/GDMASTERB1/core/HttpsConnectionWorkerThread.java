@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class HttpsConnectionWorkerThread extends Thread
@@ -14,13 +15,12 @@ public class HttpsConnectionWorkerThread extends Thread
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_BLUE = "\u001B[34m";
     private SSLSocket socket;
-    private int count;
 
 
-    public HttpsConnectionWorkerThread(SSLSocket socket, int count)
+    public HttpsConnectionWorkerThread(SSLSocket socket)
     {
-        this.count = count;
         this.socket = socket;
     }
 
@@ -44,7 +44,8 @@ public class HttpsConnectionWorkerThread extends Thread
                 htmlString += scan.nextLine();
             }
             String m = dis.readLine();
-            LOGGER.info(ANSI_GREEN + m + ANSI_RESET);;
+            LOGGER.info(ANSI_GREEN + m + ANSI_RESET);
+
             if (m != null) {
                 String response =
                         "HTTP/1.0 200 OK" + CRLF +
@@ -53,11 +54,17 @@ public class HttpsConnectionWorkerThread extends Thread
                                 htmlString +
                                 CRLF + CRLF;
                 dos.write(response);
+                StringBuilder receive = new StringBuilder();
+                receive.append(m);
+                receive.append(System.getProperty("line.separator"));
                 while ((m = dis.readLine()) != null) {
                     if (m.length() == 0) break; // End of a GET call
-                    dos.write(m);
-                    dos.newLine();
+                    //System.out.println(m);
+                    receive.append(m);
+                    receive.append(CRLF);
+                    //LOGGER.info(ANSI_BLUE + m + ANSI_RESET);
                 }
+
                 dos.flush();
             }
             LOGGER.info(ANSI_GREEN + "Fin Worker Thread" + ANSI_RESET);
@@ -88,5 +95,29 @@ public class HttpsConnectionWorkerThread extends Thread
                 catch (IOException e) {}
             }
         }
+    }
+    protected String method   = null;
+    protected String url      = null;
+    protected String protocol = null;
+    protected String parseError = "ERREUR DE PARSE";
+    protected HashMap<String, String> headers = new HashMap<String, String>();
+    public void ParseURL(String m)
+    {
+        if (m == null) {
+            parseError();
+        } else if (!m.contains(":")) {
+            String[] lineParts = m.split(" ");
+                method = lineParts[0];
+            if (lineParts[1] != null)
+                url = lineParts[1];
+            if (lineParts[2] != null)
+                protocol = lineParts[2];
+        } else {
+            String[] parts = m.split(": ");
+            headers.put(parts[0], parts[1]);
+        }
+    }
+    public String parseError() {
+        return this.parseError;
     }
 }
