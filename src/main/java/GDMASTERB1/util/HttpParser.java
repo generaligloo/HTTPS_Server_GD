@@ -19,13 +19,24 @@ public class HttpParser {
     private static final int CR = 0x0D; //Carriage return 13
     private static final int LF = 0x0A; //Line Feed 10
 
+    private static HttpRequest session;
+
+    public HttpParser() {
+
+    }
+
+
     public HttpRequest parseHttpRequest(BufferedReader Stream) throws HttpException {
         HttpRequest request = new HttpRequest();
         try {
             int byteLengthRequest = parseHttpRequestLine(Stream, request);
             LOGGER.info("Requete Taille: " + byteLengthRequest);
-            parseHeaders(Stream, request, byteLengthRequest);
-            //parseBody(Stream, request);
+            String m = "";
+            parseHeaders(Stream, request);
+            if(request.getMethod() == HttpMethod.POST)
+            {
+                parsePayload(Stream, request);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -98,19 +109,39 @@ public class HttpParser {
         }
         return 0;
     }
-
-
-    private void parseBody(BufferedReader stream, HttpRequest request) {
+    private void parsePayload(BufferedReader stream, HttpRequest request) throws IOException, HttpException {
+        int _byte = stream.read();
+        StringBuilder line = new StringBuilder();
+        line.append((char)_byte);
+        while (stream.ready()) {
+            _byte= stream.read();
+            line.append((char)_byte);
+        }
+        LOGGER.info("Fin du payload");
+        LOGGER.debug("Payload: " + line);
+        request.setHttpPayload(line.toString());
     }
 
-    private void parseHeaders(BufferedReader stream, HttpRequest request, int ByteLengthRequest) throws IOException, HttpException {
+    private void parseHeaders(BufferedReader stream, HttpRequest request) throws IOException, HttpException {
         ArrayList<String> HeadersList = new ArrayList<>();
         String line = stream.readLine();
-        while (line != null) {
-            HeadersList.add(line);
-            line = stream.readLine();
+        if (request.getMethod() == HttpMethod.POST) {
+            while (line != null) {
+                HeadersList.add(line);
+                line = stream.readLine();
+                if (line.isEmpty()) {
+                    break;
+                }
+            }
         }
-
+        else if(request.getMethod() == HttpMethod.GET)
+        {
+            while (line.getBytes().length != 0 )
+            {
+                HeadersList.add(line);
+                line = stream.readLine();
+            }
+        }
         if (HeadersList == null || HeadersList.isEmpty()) {
             throw new HttpException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
         }

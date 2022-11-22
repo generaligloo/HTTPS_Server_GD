@@ -11,6 +11,8 @@ import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.util.Scanner;
 
+import static java.lang.System.out;
+
 public class ServerListenerThread extends Thread {
     private int port;
     private String webroot;
@@ -18,6 +20,7 @@ public class ServerListenerThread extends Thread {
     private final char[] ctPass = "My1stKey".toCharArray();
     private SSLServerSocket ServerSocket;
     private SSLSocket socket;
+
     private final static Logger LOGGER = LoggerFactory.getLogger(ServerListenerThread.class);
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -29,7 +32,7 @@ public class ServerListenerThread extends Thread {
         this.webroot = WR;
         Path path = Paths.get("src\\main\\java\\GDMASTERB1\\server.jks");
         String ksName = path.toAbsolutePath().toString();
-        System.out.println("JKS server Path:"+ksName);
+        out.println("JKS server Path:"+ksName);
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream(ksName), ksPass);
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
@@ -47,18 +50,23 @@ public class ServerListenerThread extends Thread {
         // Someone is calling this server
         try {
             int count = 0;
-            while (ServerSocket.isBound() && !ServerSocket.isClosed()) {
-                try {
-                    socket = (SSLSocket) ServerSocket.accept();
-                } catch (IOException e) {
-                    LOGGER.error(ANSI_RED + "Problème accept ServerListenerThread"+ ANSI_RESET, e);
-                }
+            HttpsConnectionWorkerThread worker;
+            do {
+                //while (ServerSocket.isBound() && !ServerSocket.isClosed()) {
+                socket = (SSLSocket) ServerSocket.accept();
                 count++;
-                LOGGER.info(ANSI_BLUE+ "Connection #: " + count + ANSI_RESET);
+                LOGGER.info(ANSI_BLUE + "Connection #: " + count + ANSI_RESET);
                 printSocketInfo(socket);
-                HttpsConnectionWorkerThread worker = new HttpsConnectionWorkerThread(socket);
+                worker = new HttpsConnectionWorkerThread(socket);
                 worker.start();
-            }
+                worker.join();
+                //}
+            }while (!worker.isInterrupted());
+        }
+        catch (IOException e) {
+            LOGGER.error(ANSI_RED + "Problème accept ServerListenerThread: " + e + ANSI_RESET);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         } finally {
             if(ServerSocket!= null)
             {
@@ -73,6 +81,7 @@ public class ServerListenerThread extends Thread {
             }
         }
     }
+
 
     private static void printSocketInfo(SSLSocket s) {
         LOGGER.info("Socket class: " + s.getClass());

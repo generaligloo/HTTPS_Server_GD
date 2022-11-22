@@ -1,5 +1,9 @@
 package GDMASTERB1.core;
 
+import GDMASTERB1.util.HttpException;
+import GDMASTERB1.util.HttpMethod;
+import GDMASTERB1.util.HttpParser;
+import GDMASTERB1.util.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,7 +11,10 @@ import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class HttpsConnectionWorkerThread extends Thread
 {
@@ -27,14 +34,84 @@ public class HttpsConnectionWorkerThread extends Thread
     @Override
     public void run()
     {
-        LOGGER.info("Début Worker Thread");
+        LOGGER.info(ANSI_GREEN + "Debut Worker Thread" + ANSI_RESET);
         BufferedReader dis = null;
         BufferedWriter dos = null;
+        InputStream testIn = null;
+        PrintWriter out = null;
         try {
-            dis = new BufferedReader(new InputStreamReader
-                    (socket.getInputStream()));
-            dos = new BufferedWriter(new OutputStreamWriter
-                    (socket.getOutputStream()));
+                dis = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                HttpParser ParserHTTP = new HttpParser();
+                HttpRequest RequestHTTP = new HttpRequest();
+                while (true) {
+                    dis.mark(1);
+                    int m = dis.read();
+                    dis.reset();
+                    if (m >= 0) {
+                        try {
+                            RequestHTTP = ParserHTTP.parseHttpRequest(dis);
+                        } catch (HttpException e) {
+                            e.printStackTrace();
+                        }
+                        //debug
+                        if (RequestHTTP.getMethod() == HttpMethod.GET) {
+                            LOGGER.debug(ANSI_GREEN + "Method: " + RequestHTTP.getMethod() + ANSI_RESET);
+                            LOGGER.debug(ANSI_GREEN + "Targer: " + RequestHTTP.getRequestTarget() + ANSI_RESET);
+                            LOGGER.debug(ANSI_GREEN + "Version: " + RequestHTTP.getHttpVersion() + ANSI_RESET);
+                            Iterator<Map.Entry<String, String>> entries = RequestHTTP.getHeaders().entrySet().iterator();
+                            while (entries.hasNext()) {
+                                Map.Entry<String, String> entry = entries.next();
+                                LOGGER.debug(ANSI_GREEN + "Param = " + entry.getKey() + ", Value = " + entry.getValue() + ANSI_RESET);
+                            }
+                            dos = new BufferedWriter( new OutputStreamWriter(socket.getOutputStream()));
+                            File file = new File("src\\main\\java\\GDMASTERB1\\view\\test_GET.html");
+                            Scanner scan = new Scanner(file);
+                            String htmlString = "";
+                            final String CRLF = "\r\n";
+                            //read all lines of the text file
+                            while (scan.hasNext()) {
+                                htmlString += scan.nextLine();
+                            }
+                            String response =
+                                    "HTTP/1.0 200 OK" + CRLF +
+                                            "Content-Length:" + htmlString.getBytes().length + CRLF +
+                                            CRLF +
+                                            htmlString +
+                                            CRLF + CRLF;
+                            dos.write(response);
+                            dos.flush();
+                            break;
+                        }
+                        else if(RequestHTTP.getMethod() == HttpMethod.POST)
+                        {
+                            LOGGER.debug(ANSI_GREEN + "Method: " + RequestHTTP.getMethod() + ANSI_RESET);
+                            LOGGER.debug(ANSI_GREEN + "Targer: " + RequestHTTP.getRequestTarget() + ANSI_RESET);
+                            LOGGER.debug(ANSI_GREEN + "Version: " + RequestHTTP.getHttpVersion() + ANSI_RESET);
+                            Iterator<Map.Entry<String, String>> entries = RequestHTTP.getHeaders().entrySet().iterator();
+                            while (entries.hasNext()) {
+                                Map.Entry<String, String> entry = entries.next();
+                                LOGGER.debug(ANSI_GREEN + "Param = " + entry.getKey() + ", Value = " + entry.getValue() + ANSI_RESET);
+                            }
+                            dos = new BufferedWriter( new OutputStreamWriter(socket.getOutputStream()));
+                            String htmlString = "<html>" +
+                                    "<head><title>Bienvenue</title></head>" +
+                                    "<body><h1>"+ RequestHTTP.getHttpPayload() +"</h1></body>" +
+                                    "</html>";
+                            final String CRLF = "\r\n";
+
+                            String response =
+                                    "HTTP/1.0 200 OK" + CRLF +
+                                            "Content-Length:" + htmlString.getBytes().length + CRLF +
+                                            CRLF +
+                                            htmlString +
+                                            CRLF + CRLF;
+                            dos.write(response);
+                            dos.flush();
+                            break;
+                        }
+                    }
+                }
+            /*
             File file = new File("src\\main\\java\\GDMASTERB1\\view\\test_GET.html");
             Scanner scan = new Scanner(file);
             String htmlString = "";
@@ -57,24 +134,35 @@ public class HttpsConnectionWorkerThread extends Thread
                 StringBuilder receive = new StringBuilder();
                 receive.append(m);
                 receive.append(System.getProperty("line.separator"));
+                String line = dis.lines().collect(Collectors.joining(System.getProperty("line.separator")));
+                long test=0;
                 while ((m = dis.readLine()) != null) {
-                    if (m.length() == 0) break; // End of a GET call
+                    if (m.length == 0)
+                        break; // End of a GET call
                     //System.out.println(m);
                     receive.append(m);
                     receive.append(CRLF);
+                    test += m.length();
                     //LOGGER.info(ANSI_BLUE + m + ANSI_RESET);
                 }
-
+                LOGGER.info(ANSI_BLUE + line + ANSI_RESET);
                 dos.flush();
             }
+            */
             LOGGER.info(ANSI_GREEN + "Fin Worker Thread" + ANSI_RESET);
         }
         catch (IOException e)
         {
             LOGGER.error(ANSI_RED + e.toString() + ANSI_RESET);
-
         }
         finally {
+            if (socket != null)
+            {
+                try {
+                    socket.close();
+                }
+                catch (IOException e) {}
+            }
             if (dos != null)
             {
                 try {
@@ -87,37 +175,6 @@ public class HttpsConnectionWorkerThread extends Thread
                     dis.close();
                 } catch (IOException e) {}
             }
-            if (socket != null)
-            {
-                try {
-                    socket.close();
-                }
-                catch (IOException e) {}
-            }
         }
-    }
-    protected String method   = null;
-    protected String url      = null;
-    protected String protocol = null;
-    protected String parseError = "ERREUR DE PARSE";
-    protected HashMap<String, String> headers = new HashMap<String, String>();
-    public void ParseURL(String m)
-    {
-        if (m == null) {
-            parseError();
-        } else if (!m.contains(":")) {
-            String[] lineParts = m.split(" ");
-                method = lineParts[0];
-            if (lineParts[1] != null)
-                url = lineParts[1];
-            if (lineParts[2] != null)
-                protocol = lineParts[2];
-        } else {
-            String[] parts = m.split(": ");
-            headers.put(parts[0], parts[1]);
-        }
-    }
-    public String parseError() {
-        return this.parseError;
     }
 }

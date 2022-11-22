@@ -10,7 +10,9 @@ public class HttpRequest extends HttpMessage
     private Map<String, String> headers;
     private HttpVersion httpVersion;
 
-    HttpRequest() {
+    private String HttpPayload;
+
+    public HttpRequest() {
 
     }
 
@@ -24,6 +26,13 @@ public class HttpRequest extends HttpMessage
             throw new HttpException(HttpStatusCode.SERVER_ERROR_500_INTERNAL_SERVER_ERROR);
     }
 
+    public String getHttpPayload() {
+        return HttpPayload;
+    }
+
+    public void setHttpPayload(String httpPayload) {
+        HttpPayload = httpPayload;
+    }
 
     public HttpMethod getMethod() {
         return method;
