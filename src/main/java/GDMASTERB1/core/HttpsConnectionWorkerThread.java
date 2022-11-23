@@ -1,9 +1,6 @@
 package GDMASTERB1.core;
 
-import GDMASTERB1.util.HttpException;
-import GDMASTERB1.util.HttpMethod;
-import GDMASTERB1.util.HttpParser;
-import GDMASTERB1.util.HttpRequest;
+import GDMASTERB1.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,18 +90,34 @@ public class HttpsConnectionWorkerThread extends Thread
                                 LOGGER.debug(ANSI_GREEN + "Param = " + entry.getKey() + ", Value = " + entry.getValue() + ANSI_RESET);
                             }
                             dos = new BufferedWriter( new OutputStreamWriter(socket.getOutputStream()));
-                            String htmlString = "<html>" +
-                                    "<head><title>Bienvenue</title></head>" +
-                                    "<body><h1>"+ RequestHTTP.getHttpPayload() +"</h1></body>" +
-                                    "</html>";
+                            String payload = RequestHTTP.getHttpPayload();
+                            String[] payloadArray = payload.split("&|=");
+                            boolean isAuthenticated = Authentication.verifyAuthentication(payloadArray);
+                            String htmlString = "";
+                            String response = "";
                             final String CRLF = "\r\n";
-
-                            String response =
-                                    "HTTP/1.0 200 OK" + CRLF +
-                                            "Content-Length:" + htmlString.getBytes().length + CRLF +
-                                            CRLF +
-                                            htmlString +
-                                            CRLF + CRLF;
+                            if(isAuthenticated) {
+                                htmlString = "<html>" +
+                                        "<head><title>Bienvenue</title></head>" +
+                                        "<body><h1>Bienvenue " + payloadArray[1] +"!</h1>" +
+                                        "<h2>Bouton de paiment ici</h2></body>" +
+                                        "</html>";
+                                response = "HTTP/1.0 200 OK" + CRLF +
+                                        "Content-Length:" + htmlString.getBytes().length + CRLF +
+                                        CRLF +
+                                        htmlString +
+                                        CRLF + CRLF;
+                            } else {
+                                htmlString = "<html>" +
+                                        "<head><title>Bienvenue</title></head>" +
+                                        "<body><h1>Utilisateur ou mot de passe incorrect</h1></body>" +
+                                        "</html>";
+                                response = "HTTP/1.0 200 OK" + CRLF +
+                                        "Content-Length:" + htmlString.getBytes().length + CRLF +
+                                        CRLF +
+                                        htmlString +
+                                        CRLF + CRLF;
+                            }
                             dos.write(response);
                             dos.flush();
                             break;

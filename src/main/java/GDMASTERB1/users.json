@@ -1,0 +1,12 @@
+{
+  "users": [
+    {
+      "login": "Martin",
+      "password" : "5846fa94a64761c2f8f13d9639a8c9112f64d2ad"
+    },
+    {
+      "login": "Gael",
+      "password" : "5846fa94a64761c2f8f13d9639a8c9112f64d2ad"
+    }
+  ]
+}
