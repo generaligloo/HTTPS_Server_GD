@@ -6,12 +6,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLSocket;
 import java.io.*;
-import java.net.Socket;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class HttpsConnectionWorkerThread extends Thread
 {
@@ -53,7 +50,7 @@ public class HttpsConnectionWorkerThread extends Thread
                         //debug
                         if (RequestHTTP.getMethod() == HttpMethod.GET) {
                             LOGGER.debug(ANSI_GREEN + "Method: " + RequestHTTP.getMethod() + ANSI_RESET);
-                            LOGGER.debug(ANSI_GREEN + "Targer: " + RequestHTTP.getRequestTarget() + ANSI_RESET);
+                            LOGGER.debug(ANSI_GREEN + "Target: " + RequestHTTP.getRequestTarget() + ANSI_RESET);
                             LOGGER.debug(ANSI_GREEN + "Version: " + RequestHTTP.getHttpVersion() + ANSI_RESET);
                             Iterator<Map.Entry<String, String>> entries = RequestHTTP.getHeaders().entrySet().iterator();
                             while (entries.hasNext()) {
