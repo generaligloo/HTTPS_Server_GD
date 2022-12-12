@@ -18,7 +18,6 @@ public class HTTPS_Server
         JSONParser parser = new JSONParser();
         JSONObject object = (JSONObject) parser.parse(new FileReader("src\\main\\java\\GDMASTERB1\\config\\httpsconfig.json"));
         Long port = (Long) object.get("port");
-        System.out.println(port.toString());
         conf.setPort( Integer.parseInt(port.toString()));
         LOGGER.info("Configuation port: " + conf.getPort());
         String WR = (String) object.get("webroot");

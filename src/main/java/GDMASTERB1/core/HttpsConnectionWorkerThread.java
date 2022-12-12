@@ -94,26 +94,33 @@ public class HttpsConnectionWorkerThread extends Thread
                             String response = "";
                             final String CRLF = "\r\n";
                             if(isAuthenticated) {
-                                htmlString = "<html>" +
-                                        "<head><title>Bienvenue</title></head>" +
-                                        "<body><h1>Bienvenue " + payloadArray[1] +"!</h1>" +
-                                        "<h2>Bouton de paiment ici</h2></body>" +
-                                        "</html>";
-                                response = "HTTP/1.0 200 OK" + CRLF +
-                                        "Content-Length:" + htmlString.getBytes().length + CRLF +
-                                        CRLF +
-                                        htmlString +
-                                        CRLF + CRLF;
+                                File file = new File("src\\main\\java\\GDMASTERB1\\view\\3DSEC_init.html");
+                                Scanner scan = new Scanner(file);
+                                htmlString = "";
+                                //read all lines of the text file
+                                while (scan.hasNext()) {
+                                    htmlString += scan.nextLine();
+                                }
+                                response =
+                                        "HTTP/1.0 200 OK" + CRLF +
+                                                "Content-Length:" + htmlString.getBytes().length + CRLF +
+                                                CRLF +
+                                                htmlString +
+                                                CRLF + CRLF;
                             } else {
-                                htmlString = "<html>" +
-                                        "<head><title>Bienvenue</title></head>" +
-                                        "<body><h1>Utilisateur ou mot de passe incorrect</h1></body>" +
-                                        "</html>";
-                                response = "HTTP/1.0 200 OK" + CRLF +
-                                        "Content-Length:" + htmlString.getBytes().length + CRLF +
-                                        CRLF +
-                                        htmlString +
-                                        CRLF + CRLF;
+                                File file = new File("src\\main\\java\\GDMASTERB1\\view\\con_refused.html");
+                                Scanner scan = new Scanner(file);
+                                htmlString = "";
+                                //read all lines of the text file
+                                while (scan.hasNext()) {
+                                    htmlString += scan.nextLine();
+                                }
+                                response =
+                                        "HTTP/1.0 200 OK" + CRLF +
+                                                "Content-Length:" + htmlString.getBytes().length + CRLF +
+                                                CRLF +
+                                                htmlString +
+                                                CRLF + CRLF;
                             }
                             dos.write(response);
                             dos.flush();
