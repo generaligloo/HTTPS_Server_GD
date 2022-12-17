@@ -30,7 +30,7 @@ public class ServerListenerThread extends Thread {
     public ServerListenerThread(int port, String WR) throws Exception {
         this.port = port;
         this.webroot = WR;
-        Path path = Paths.get("src\\main\\java\\GDMASTERB1\\server.jks");
+        Path path = Paths.get("src\\main\\java\\GDMASTERB1\\store\\server.jks");
         String ksName = path.toAbsolutePath().toString();
         out.println("JKS server Path:"+ksName);
         KeyStore ks = KeyStore.getInstance("JKS");

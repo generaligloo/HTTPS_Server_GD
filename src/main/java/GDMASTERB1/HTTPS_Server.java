@@ -13,6 +13,12 @@ public class HTTPS_Server
     private final static Logger LOGGER = LoggerFactory.getLogger(HTTPS_Server.class);
     public static void main(String[] args) throws Exception
     {
+        //init method
+        System.setProperty("javax.net.ssl.keyStore","src\\main\\java\\GDMASTERB1\\store\\serverendtoend.jks");
+        System.setProperty("javax.net.ssl.keyStorePassword","123456HTTPS");
+        System.setProperty("javax.net.ssl.trustStore","src\\main\\java\\GDMASTERB1\\store\\serverendtoend.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword","123456HTTPS");
+
         LOGGER.info("Démarrage serveur ...");
         Configuration conf = new Configuration();
         JSONParser parser = new JSONParser();
@@ -26,8 +32,11 @@ public class HTTPS_Server
 
         try
         {
+            ExchangeACQ ExchangeACQ = new ExchangeACQ();
+            Thread ExchangeACQThread = new Thread(ExchangeACQ);
             ServerListenerThread SLT = new ServerListenerThread(conf.getPort(), conf.getWebroot());
             SLT.start();
+            ExchangeACQThread.start();
         }
         catch (IOException e)
         {
