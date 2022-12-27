@@ -2,11 +2,13 @@
   "users": [
     {
       "login": "Martin",
-      "password" : "5846fa94a64761c2f8f13d9639a8c9112f64d2ad"
+      "password" : "0e9eb6c38ba41c64d846023de9bf671411e412bb",
+      "salt" : "gggg"
     },
     {
       "login": "Gael",
-      "password" : "5846fa94a64761c2f8f13d9639a8c9112f64d2ad"
+      "password" : "ae2324257cead88cae0571c8837a9638d2fcc35d",
+      "salt" : "aaaa"
     }
   ]
 }

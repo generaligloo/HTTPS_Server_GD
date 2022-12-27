@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileReader;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 
 public class Authentication {
 
@@ -27,9 +28,11 @@ public class Authentication {
             JSONArray usersArray = (JSONArray) object.get("users");
             String[] loginArray = new String[usersArray.size()];
             String[] passwordArray = new String[usersArray.size()];
+            String[] saltArray = new String[usersArray.size()];
             for (int i = 0; i < usersArray.size(); i++) {
                 loginArray[i] = (String) ((JSONObject) usersArray.get(i)).get("login");
                 passwordArray[i] = (String) ((JSONObject) usersArray.get(i)).get("password");
+                saltArray[i] = (String) ((JSONObject) usersArray.get(i)).get("salt");
             }
             int index = -1;
             for (int i = 0; i < loginArray.length; i++) {
@@ -38,14 +41,15 @@ public class Authentication {
                 }
             }
             if(index > -1) {
-                //Récupère le mdp depuis le json
+                //Récupère le mdp et du salt depuis le json
                 String should = passwordArray[index];
+                String salt = saltArray[index];
 
                 //Crée un digest du mdp reçu
                 MessageDigest md = MessageDigest.getInstance("SHA-1");
                 md.update(password.getBytes());
                 //Ajout du "salt"
-                byte[] result = md.digest("MaGa".getBytes());
+                byte[] result = md.digest(salt.getBytes());
                 StringBuffer sb = new StringBuffer();
                 for (int i = 0; i < result.length; i++) {
                     sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16).substring(1));
