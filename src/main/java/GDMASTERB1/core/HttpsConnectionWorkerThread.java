@@ -79,56 +79,60 @@ public class HttpsConnectionWorkerThread extends Thread
                             break;
                         }
                         else if(RequestHTTP.getMethod() == HttpMethod.POST) {
-                            if (Objects.equals(RequestHTTP.getRequestTarget(), "/SubmitToken"))
-                            {
+                            if (Objects.equals(RequestHTTP.getRequestTarget(), "/submitToken")) {
                                 String TokenPayload = RequestHTTP.getHttpPayload();
+                                dos = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
                                 ExchangeACQ ExchangeACQ = new ExchangeACQ(TokenPayload);
                                 Thread ExchangeACQThread = new Thread(ExchangeACQ);
                                 ExchangeACQThread.start();
-                                while(Objects.equals(ExchangeACQ.getResponse(), ""))
-                                {
-                                    try {
-                                        wait(1000);
-                                    } catch (InterruptedException e) {
-                                        throw new RuntimeException(e);
-                                    }
+                                try {
+                                    ExchangeACQThread.join();
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
                                 }
-                                if(Objects.equals(ExchangeACQ.getResponse(), "OK")) //valid response
-                                {
-                                    File file = new File("src\\main\\java\\GDMASTERB1\\view\\Valide3D.html");
-                                    Scanner scan = new Scanner(file);
-                                    String htmlString = "";
-                                    String response = "";
-                                    final String CRLF = "\r\n";
-                                    //read all lines of the text file
-                                    while (scan.hasNext()) {
-                                        htmlString += scan.nextLine();
+                                if (Objects.equals(ExchangeACQ.getResponse(), "@Payement-OK")) //valid response
+                                    {
+                                        LOGGER.debug(ANSI_GREEN + "Payement valide ..." + ANSI_RESET);
+                                        File file = new File("src\\main\\java\\GDMASTERB1\\view\\Valide3D.html");
+                                        Scanner scan = new Scanner(file);
+                                        String htmlString = "";
+                                        String response = "";
+                                        final String CRLF = "\r\n";
+                                        //read all lines of the text file
+                                        while (scan.hasNext()) {
+                                            htmlString += scan.nextLine();
+                                        }
+                                        response =
+                                                "HTTP/1.0 200 OK" + CRLF +
+                                                        "Content-Length:" + htmlString.getBytes().length + CRLF +
+                                                        CRLF +
+                                                        htmlString +
+                                                        CRLF + CRLF;
+                                        dos.write(response);
+                                        dos.flush();
+                                        break;
                                     }
-                                    response =
-                                            "HTTP/1.0 200 OK" + CRLF +
-                                                    "Content-Length:" + htmlString.getBytes().length + CRLF +
-                                                    CRLF +
-                                                    htmlString +
-                                                    CRLF + CRLF;
-                                }
-                                else //invalid response
-                                {
-                                    File file = new File("src\\main\\java\\GDMASTERB1\\view\\Invalid3D.html");
-                                    Scanner scan = new Scanner(file);
-                                    String htmlString = "";
-                                    String response = "";
-                                    final String CRLF = "\r\n";
-                                    //read all lines of the text file
-                                    while (scan.hasNext()) {
-                                        htmlString += scan.nextLine();
+                                    else //invalid response
+                                    {
+                                        File file = new File("src\\main\\java\\GDMASTERB1\\view\\Invalid3D.html");
+                                        Scanner scan = new Scanner(file);
+                                        String htmlString = "";
+                                        String response = "";
+                                        final String CRLF = "\r\n";
+                                        //read all lines of the text file
+                                        while (scan.hasNext()) {
+                                            htmlString += scan.nextLine();
+                                        }
+                                        response =
+                                                "HTTP/1.0 200 OK" + CRLF +
+                                                        "Content-Length:" + htmlString.getBytes().length + CRLF +
+                                                        CRLF +
+                                                        htmlString +
+                                                        CRLF + CRLF;
+                                        dos.write(response);
+                                        dos.flush();
+                                        break;
                                     }
-                                    response =
-                                            "HTTP/1.0 200 OK" + CRLF +
-                                                    "Content-Length:" + htmlString.getBytes().length + CRLF +
-                                                    CRLF +
-                                                    htmlString +
-                                                    CRLF + CRLF;
-                                }
                             }
                             else {
                                 LOGGER.debug(ANSI_GREEN + "Method: " + RequestHTTP.getMethod() + ANSI_RESET);
@@ -182,44 +186,6 @@ public class HttpsConnectionWorkerThread extends Thread
                         }
                     }
                 }
-            /*
-            File file = new File("src\\main\\java\\GDMASTERB1\\view\\test_GET.html");
-            Scanner scan = new Scanner(file);
-            String htmlString = "";
-            final String CRLF = "\r\n";
-            //read all lines of the text file
-            while (scan.hasNext()) {
-                htmlString += scan.nextLine();
-            }
-            String m = dis.readLine();
-            LOGGER.info(ANSI_GREEN + m + ANSI_RESET);
-
-            if (m != null) {
-                String response =
-                        "HTTP/1.0 200 OK" + CRLF +
-                                "Content-Length:" + htmlString.getBytes().length + CRLF +
-                                CRLF +
-                                htmlString +
-                                CRLF + CRLF;
-                dos.write(response);
-                StringBuilder receive = new StringBuilder();
-                receive.append(m);
-                receive.append(System.getProperty("line.separator"));
-                String line = dis.lines().collect(Collectors.joining(System.getProperty("line.separator")));
-                long test=0;
-                while ((m = dis.readLine()) != null) {
-                    if (m.length == 0)
-                        break; // End of a GET call
-                    //System.out.println(m);
-                    receive.append(m);
-                    receive.append(CRLF);
-                    test += m.length();
-                    //LOGGER.info(ANSI_BLUE + m + ANSI_RESET);
-                }
-                LOGGER.info(ANSI_BLUE + line + ANSI_RESET);
-                dos.flush();
-            }
-            */
             LOGGER.info(ANSI_GREEN + "Fin Worker Thread" + ANSI_RESET);
         }
         catch (IOException e)

@@ -34,8 +34,8 @@ public class ExchangeACQ implements Runnable {
             OutputStreamWriter outputstreamwriter = new OutputStreamWriter(outputstream);
             BufferedWriter bufferedwriter = new BufferedWriter(outputstreamwriter);
 
-            LOGGER.info(Ansi.BLUE + "Envoi du token au serveur ACQ..." + Ansi.SANE);
-            bufferedwriter.write(getToken());
+            LOGGER.info(Ansi.BLUE + "Envoi du token au serveur ACQ du token " + getToken() + Ansi.SANE);
+            bufferedwriter.write(getToken() +'\n');
             bufferedwriter.flush();
             LOGGER.info(Ansi.BLUE + "En attente de la réponse du serveur ACQ..."+ Ansi.SANE);
             setResponse(bufferedreader.readLine());
