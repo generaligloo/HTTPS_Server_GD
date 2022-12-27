@@ -12,6 +12,13 @@ public class ExchangeACQ implements Runnable {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(HTTPS_Server.class);
 
+    private String Token;
+    private String Response = "";
+
+    public ExchangeACQ(String Token) {
+        this.Token = Token;
+    }
+
     @Override
     public void run() {
 
@@ -27,15 +34,31 @@ public class ExchangeACQ implements Runnable {
             OutputStreamWriter outputstreamwriter = new OutputStreamWriter(outputstream);
             BufferedWriter bufferedwriter = new BufferedWriter(outputstreamwriter);
 
-            LOGGER.info(Ansi.BLUE + "Envoi des informations au serveur ACQ...");
-            bufferedwriter.write("Ceci est un message pour l'ACQ" + '\n');
+            LOGGER.info(Ansi.BLUE + "Envoi du token au serveur ACQ..." + Ansi.SANE);
+            bufferedwriter.write(getToken());
             bufferedwriter.flush();
-            LOGGER.info(Ansi.BLUE + "En attente de la réponse du serveur ACQ...");
-            String response = bufferedreader.readLine();
-            LOGGER.info(Ansi.GREEN + "Résponse de l'ACQ: "+ response);
+            LOGGER.info(Ansi.BLUE + "En attente de la réponse du serveur ACQ..."+ Ansi.SANE);
+            setResponse(bufferedreader.readLine());
+            LOGGER.info(Ansi.GREEN + "Résponse de l'ACQ: "+ getResponse() + Ansi.SANE);
             sslsocket.close();
         } catch (Exception exception) {
             exception.printStackTrace();
         }
+    }
+
+    public String getToken() {
+        return Token;
+    }
+
+    public void setToken(String token) {
+        Token = token;
+    }
+
+    public String getResponse() {
+        return Response;
+    }
+
+    public void setResponse(String response) {
+        Response = response;
     }
 }

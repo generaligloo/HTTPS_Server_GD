@@ -6,8 +6,10 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.FileReader;
 import java.io.IOException;
+
 public class HTTPS_Server
 {
     private final static Logger LOGGER = LoggerFactory.getLogger(HTTPS_Server.class);
@@ -32,11 +34,8 @@ public class HTTPS_Server
 
         try
         {
-            ExchangeACQ ExchangeACQ = new ExchangeACQ();
-            Thread ExchangeACQThread = new Thread(ExchangeACQ);
             ServerListenerThread SLT = new ServerListenerThread(conf.getPort(), conf.getWebroot());
             SLT.start();
-            ExchangeACQThread.start();
         }
         catch (IOException e)
         {
